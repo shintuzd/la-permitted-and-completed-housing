@@ -1,0 +1,14 @@
+{
+  "start_issue_date": "2001-01-01",
+  "cofo_start_date": "2005-01-01",
+  "pipeline_start_issue_date": "2005-01-01",
+  "stalled_after_years": 5,
+  "sheets": {
+    "corrections": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTtja-s1KWicX-CJBJZQlCOAUiiEnTMRWlrr4Q7ZkpqDjXTFyFXESfQManRgi_HC-UlVqJ6D_N7bYAV/pub?gid=1142380189&single=true&output=csv",
+    "additions": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRS6lu6Grx61EVn0MhCW7RnfXF3lCD4hrZK8R1UQl0Zo-dShKUY4O_4xt4eaPYbb-DJKjClSIUJL6C/pub?gid=1570376516&single=true&output=csv",
+    "locations": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSq3s4hpxcchmkOWVA-CXPC_7UltJ8aIZoqm6bIAg56_9G2IZGeTmk9e10kD_g4d6AjAFIo6MnMx4XH/pub?gid=760546431&single=true&output=csv",
+    "events_city": "https://docs.google.com/spreadsheets/d/e/2PACX-1vShCEQgjq0-O2MPSIXpHNQsGOZt4ydg5ktH2ZyzQ5_hHOOdRSkO1AfVyIe2PuKIVx8DRLRk-cdkWhrq/pub?gid=329309651&single=true&output=csv",
+    "events_neighborhood": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_S9NS50sofUZXNDyd5FbseLw0PranoeFw1e0IXpFSUlG_RccQMpyzObED20c9e8h1N9CZi1Tegx4h/pub?gid=329377775&single=true&output=csv",
+    "leaders": "https://docs.google.com/spreadsheets/d/e/2PACX-1vT6YkHfl5KSoiQb40ml36LgJQpEvv8IFpunx5rnnZ4yi9BFO4TngL9B2pccdYb_XG8Q0ZwIeF0rHWdG/pub?gid=1720180687&single=true&output=csv"
+  }
+}

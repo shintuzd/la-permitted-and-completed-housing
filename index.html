@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LA Housing Tracker | Mohammed Azad</title>
+    <meta name="description" content="Housing permitted and completed in the City of Los Angeles since 2001, by neighborhood and housing type, with interest rates, administrations, and major events.">
+    <meta property="og:title" content="LA Housing Tracker">
+    <meta property="og:description" content="Housing permitted and completed in the City of Los Angeles since 2001, by neighborhood and housing type.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="https://shintuzd.com/images/favicon.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header__inner">
+            <a href="https://shintuzd.com/" class="brand">
+                <span class="brand__name">Mohammed Azad</span>
+                <span class="brand__title">Data Analyst</span>
+            </a>
+            <nav class="nav" aria-label="Main">
+                <a href="https://shintuzd.com/about.html">About Me</a>
+                <a href="https://shintuzd.com/experience.html">Experience</a>
+                <a href="https://shintuzd.com/projects.html">Projects</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="intro">
+            <h1>Permitted and Built Housing in Los Angeles</h1>
+            <p class="lede">Every home the City of Los Angeles has permitted since 2001, and every one completed since 2005, by neighborhood and housing type. Shown alongside interest rates, City, State, and federal administrations, and the events that shaped them.</p>
+            <p class="updated">Data updated <span id="updated">…</span> · <a href="#methodology">Methodology</a></p>
+        </section>
+
+        <section class="controls" aria-label="Filters">
+            <div class="control">
+                <span class="control__label">Show housing</span>
+                <div class="segmented" data-bind="measure">
+                    <button type="button" data-value="issue" aria-pressed="true">Permitted</button>
+                    <button type="button" data-value="cofo" aria-pressed="false">Completed</button>
+                </div>
+            </div>
+            <div class="control">
+                <label class="control__label" for="neighborhood">Neighborhood</label>
+                <select id="neighborhood" data-bind="nb"><option value="-1">All of Los Angeles</option></select>
+            </div>
+            <div class="control">
+                <label class="control__label" for="preset">Dates</label>
+                <div class="dates">
+                    <select id="preset" data-bind="preset"></select>
+                    <input type="date" data-bind="from" aria-label="From date">
+                    <span aria-hidden="true">–</span>
+                    <input type="date" data-bind="to" aria-label="To date">
+                </div>
+            </div>
+            <div class="control">
+                <span class="control__label">Units</span>
+                <div class="segmented" data-bind="units">
+                    <button type="button" data-value="gross" aria-pressed="true">New units</button>
+                    <button type="button" data-value="net" aria-pressed="false">Net of demolitions</button>
+                </div>
+            </div>
+            <div class="control">
+                <label class="control__label" for="rate">Interest rate</label>
+                <select id="rate" data-bind="rate">
+                    <option value="FEDFUNDS">Federal funds rate</option>
+                    <option value="MORTGAGE30US">30-year mortgage rate</option>
+                    <option value="">None</option>
+                </select>
+            </div>
+            <div class="control">
+                <span class="control__label">Period</span>
+                <div class="segmented" data-bind="grain">
+                    <button type="button" data-value="month" aria-pressed="false">Monthly</button>
+                    <button type="button" data-value="quarter" aria-pressed="true">Quarterly</button>
+                    <button type="button" data-value="year" aria-pressed="false">Yearly</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats" id="stats" aria-live="polite"></section>
+
+        <section class="panel">
+            <div class="panel__head">
+                <h2 id="chart-title">Housing units permitted</h2>
+                <p class="hint">Drag across the chart to zoom into a time range. Click a legend item to hide or show a housing type.</p>
+            </div>
+            <div class="legend" id="legend"></div>
+            <div id="chart" class="chart"></div>
+            <div id="hood-events" class="hood-events" hidden></div>
+        </section>
+
+        <section class="panel">
+            <div class="panel__head">
+                <h2 id="map-title">Where it was permitted</h2>
+                <p class="hint">Circle size shows units. Click a neighborhood to filter, or a circle for project details.</p>
+            </div>
+            <div class="map-filters" aria-label="Map filters">
+                <div class="segmented" data-bind="measure">
+                    <button type="button" data-value="issue" aria-pressed="true">Permitted</button>
+                    <button type="button" data-value="cofo" aria-pressed="false">Completed</button>
+                </div>
+                <select data-bind="nb" aria-label="Neighborhood"><option value="-1">All of Los Angeles</option></select>
+                <div class="dates">
+                    <select data-bind="preset" aria-label="Dates"></select>
+                    <input type="date" data-bind="from" aria-label="From date">
+                    <span aria-hidden="true">–</span>
+                    <input type="date" data-bind="to" aria-label="To date">
+                </div>
+                <div class="type-chips" data-bind="types" role="group" aria-label="Housing types"></div>
+            </div>
+            <div id="map" class="map" role="region" aria-label="Map of housing permits"></div>
+        </section>
+
+        <section class="panel">
+            <div class="panel__head">
+                <h2>From permit to completion</h2>
+                <p class="hint">Where the units permitted each year stand today (permits issued since 2005).</p>
+            </div>
+            <div class="panel-filters" aria-label="Pipeline filters">
+                <select data-bind="nb" aria-label="Neighborhood"><option value="-1">All of Los Angeles</option></select>
+                <div class="type-chips" data-bind="types" role="group" aria-label="Housing types"></div>
+            </div>
+            <div class="legend" id="pipeline-legend"></div>
+            <div id="pipeline" class="chart chart--short"></div>
+        </section>
+
+        <section class="panel">
+            <div class="panel__head">
+                <h2>How long it takes</h2>
+                <p class="hint">Median months by year the permit was issued, using the neighborhood and housing types selected above. Recent years only include projects finished so far, so they look faster than they will end up.</p>
+            </div>
+            <div class="legend" id="duration-legend"></div>
+            <div id="durations" class="chart chart--short"></div>
+        </section>
+
+        <section class="methodology" id="methodology">
+            <h2>Methodology</h2>
+            <dl>
+                <dt>Sources</dt>
+                <dd>Los Angeles Department of Building and Safety (LADBS) building permits on the City's open data portal: <a href="https://data.lacity.org/d/e67z-kt2n" target="_blank" rel="noopener">issued before 2010</a>, <a href="https://data.lacity.org/d/dyxf-7hc4" target="_blank" rel="noopener">2010–2019</a>, and <a href="https://data.lacity.org/d/pi9x-tg5x" target="_blank" rel="noopener">2020 to present</a>, plus LADBS <a href="https://data.lacity.org/d/3f9m-afei" target="_blank" rel="noopener">Certificates of Occupancy</a>. Neighborhoods are the <a href="https://geohub.lacity.org/datasets/la-times-neighborhood-boundaries" target="_blank" rel="noopener">LA Times neighborhood boundaries</a>. Interest rates are the effective federal funds rate (<a href="https://fred.stlouisfed.org/series/FEDFUNDS" target="_blank" rel="noopener">FEDFUNDS</a>) and Freddie Mac's 30-year fixed mortgage rate (<a href="https://fred.stlouisfed.org/series/MORTGAGE30US" target="_blank" rel="noopener">MORTGAGE30US</a>) from FRED, averaged by month.</dd>
+                <dt>Units</dt>
+                <dd>Units are the sum of dwelling units (<code>du_changed</code>), accessory dwelling units (<code>adu_changed</code>), and junior ADUs (<code>junior_adu</code>) on each permit. "New units" counts only permits that add units; "Net of demolitions" also subtracts units removed by demolitions and conversions.</dd>
+                <dt>Permitted</dt>
+                <dd>Counted by permit issue date, starting with permits issued January 1, 2001.</dd>
+                <dt>Completed</dt>
+                <dd>Counted by Certificate of Occupancy (CofO) date. LADBS did not record CofO dates in this data before 2005, so completions start in 2005. When a permit's CofO date is blank but the CofO dataset has one, the earliest CofO issued for that permit is used. Permits with no CofO date are not counted as completed. Some projects may have their TCO, but are considered incomplete in this dashboard given the lack of CofO.</dd>
+                <dt>Housing types</dt>
+                <dd>ADUs include junior ADUs. Other units are grouped by the number of units on the permit: single-family (1), duplex to fourplex (2–4), and apartments (5+), regardless of the permit's building category, since many mixed-use apartment buildings are permitted as "Commercial." A permit that adds both a home and an ADU is split between the two types.</dd>
+                <dt>Pipeline status</dt>
+                <dd>Completed permits have a CofO date. In progress: Issued, CofO in Progress, Re-Activate Permit, CofO Reactivated, Not Ready for Inspection, or Permit Extended, issued within the last <span class="cfg-stalled">5</span> years. Stalled or abandoned: Permit Expired, Permit Closed, Refund in Progress, No Progress, Intent to Revoke, or an in-progress status more than <span class="cfg-stalled">5</span> years after issue. Finaled without a CofO date: Permit Finaled, CofO Corrected, or CofO Superseded with no CofO date on record.</dd>
+                <dt>Duplicates</dt>
+                <dd>Supplemental permits that repeat the original permit's unit count are excluded, as are non-building permits (such as parking structures) and Addition or Alter/Repair permits that repeat a new building's unit count at the same address. Supplements that change the unit count are kept as revisions.</dd>
+                <dt>Locations</dt>
+                <dd>Permits without coordinates are located by parcel number, then by address using LA County parcel records and the U.S. Census geocoder, and finally at the center of the Assessor block for parcels that have since been renumbered. Permits that can't be located are still counted in the citywide totals but don't appear on the map or in neighborhood totals.</dd>
+                <dt>Corrections</dt>
+                <dd>Known data errors are corrected by hand, and projects missing from the LADBS data are added manually. The data refreshes every week.</dd>
+            </dl>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer__inner">
+            <p class="footer__cta">Get in touch!</p>
+            <ul class="footer__links">
+                <li><a href="mailto:shintuzd@gmail.com">shintuzd@gmail.com</a></li>
+                <li><a href="https://www.linkedin.com/in/azadmohammed/" target="_blank" rel="noopener">LinkedIn</a></li>
+                <li><a href="https://github.com/shintuzd" target="_blank" rel="noopener">GitHub</a></li>
+            </ul>
+            <p class="footer__copy">© <span data-year>2026</span> Mohammed Azad</p>
+        </div>
+    </footer>
+
+    <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

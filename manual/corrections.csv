@@ -1,0 +1,6 @@
+permit_nbr,field,value,note
+21014-20000-05640,adu_changed,0,Sq Ft listed as units; another permit exists to fix it
+24010-20000-01878,adu_changed,1,incorrectly listed
+24010-20001-01878,adu_changed,0,permit meant to subtract from other permit
+22016-20000-05796,adu_changed,1,sq ft listed as units; fix to 1
+24016-20000-02447,adu_changed,1,sq ft listed as units; fix to 1

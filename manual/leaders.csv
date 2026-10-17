@@ -1,0 +1,15 @@
+office,name,party,start,end
+Mayor,Richard Riordan,R,1993-07-01,2001-07-01
+Mayor,James Hahn,D,2001-07-01,2005-07-01
+Mayor,Antonio Villaraigosa,D,2005-07-01,2013-07-01
+Mayor,Eric Garcetti,D,2013-07-01,2022-12-12
+Mayor,Karen Bass,D,2022-12-12,
+Governor,Gray Davis,D,1999-01-04,2003-11-17
+Governor,Arnold Schwarzenegger,R,2003-11-17,2011-01-03
+Governor,Jerry Brown,D,2011-01-03,2019-01-07
+Governor,Gavin Newsom,D,2019-01-07,
+President,George W. Bush,R,2001-01-20,2009-01-20
+President,Barack Obama,D,2009-01-20,2017-01-20
+President,Donald Trump,R,2017-01-20,2021-01-20
+President,Joe Biden,D,2021-01-20,2025-01-20
+President,Donald Trump,R,2025-01-20,
