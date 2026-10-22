@@ -4,3 +4,5 @@ permit_nbr,field,value,note
 24010-20001-01878,adu_changed,0,permit meant to subtract from other permit
 22016-20000-05796,adu_changed,1,sq ft listed as units; fix to 1
 24016-20000-02447,adu_changed,1,sq ft listed as units; fix to 1
+11019-30000-00398,du_changed,-14,Demolition units entered do not match description
+10019-10000-01787,du_changed,-4,Assessor portal mentions 4 unit multi-family housing
