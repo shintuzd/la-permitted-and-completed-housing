@@ -1,33 +1,20 @@
 # LA Housing Tracker
 
-An interactive dashboard of housing permitted and completed in the City of Los Angeles since 2001, by neighborhood and housing type. It shows the data alongside interest rates, City, State, and federal administrations, and the events that shaped housing production.
+An interactive dashboard of housing permitted and completed in the City of Los Angeles by neighborhood and housing type derived from LADBS permitting data. It shows the data alongside interest rates, City, State, and federal administrations, and the events that shaped housing production.
 
 **Live:** https://shintuzd.github.io/la-permitted-and-completed-housing/
 
 ## What it shows
 
-- **Permitted vs. completed.** Permits are counted by issue date (2001 onward). Completions are counted by Certificate of Occupancy (CofO) date (2005 onward; LADBS didn't record CofO dates before then).
-- **Housing types.** ADUs (including junior ADUs), single-family (1 unit), duplex–fourplex (2–4), and apartments (5+).
+- **Permitted vs. completed.** Permits are counted by issue date (2001 onward). Completions are counted by Certificate of Occupancy (CofO) date (2005 onward.
+- **Housing types.** ADUs, single-family homes, duplex–fourplex, and apartments (5+).
 - **New vs. net units.** Net subtracts units removed by demolitions and conversions.
-- **Neighborhoods.** Every permit is joined to the LA Times neighborhood boundaries. The chart, totals, map, and pipeline views can all be filtered to one neighborhood, which also shows that neighborhood's events, such as transit openings.
+- **Neighborhoods.** Every permit is geotagged to its neighborhood. The chart, totals, map, and pipeline views can all be filtered to one neighborhood, which also shows that neighborhood's events, such as transit openings.
 - **Date range.** Presets (this year, last 12 months, last 5 years) or custom dates, shared by every view.
 - **Interest rates.** The federal funds rate or the 30-year mortgage rate, from FRED.
 - **Pipeline.** Where the units permitted each year stand today (completed, in progress, stalled), and the median time from submittal to issue and from issue to CofO.
 
 The page's methodology section covers every definition in detail.
-
-## How it's built
-
-```
-LADBS permits (3 datasets) ───────┐
-LADBS Certificates of Occupancy ──┤
-LA County parcels, Census geocoder┤   pipeline/build.py    ┌─ data/permits.json
-LA Times neighborhoods ───────────┼────────────────────────▶├─ data/neighborhoods.geojson
-FRED interest rates ──────────────┤  (weekly GitHub Action) ├─ data/rates.json
-Curated corrections and events ───┘                         └─ data/events.json, meta.json
-                                                                       │
-                                                  index.html + app.js (D3 + MapLibre GL)
-```
 
 A Python pipeline runs weekly on GitHub Actions. It re-downloads every housing-related permit from the City's open data portal and rebuilds the static data files. GitHub Pages serves them to the page, which does all filtering and aggregation in the browser. Re-downloading everything each week, instead of only new rows, also picks up Certificates of Occupancy issued for older permits and any fixes LADBS makes to its records.
 
@@ -70,7 +57,3 @@ python -m http.server 8000   # open http://localhost:8000
 - [LA County parcels](https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0) and the [U.S. Census geocoder](https://geocoding.geo.census.gov/)
 - FRED: [FEDFUNDS](https://fred.stlouisfed.org/series/FEDFUNDS), [MORTGAGE30US](https://fred.stlouisfed.org/series/MORTGAGE30US)
 - Basemap: [OpenFreeMap](https://openfreemap.org/), © OpenStreetMap contributors
-
----
-
-Built by [Mohammed Azad](https://shintuzd.com).
