@@ -1,73 +1,66 @@
 # LA Housing Tracker
 
-Housing permitted and completed in the City of Los Angeles since 2001, by neighborhood and housing type, shown against interest rates, City/State/federal administrations, and major events.
+An interactive dashboard of housing permitted and completed in the City of Los Angeles since 2001, by neighborhood and housing type. It shows the data alongside interest rates, City, State, and federal administrations, and the events that shaped housing production.
 
 **Live:** https://shintuzd.github.io/la-permitted-and-completed-housing/
 
 ## What it shows
 
-- **Permitted vs. completed.** Permits are counted by issue date (2001 onward). Completions are counted by Certificate of Occupancy (CofO) date (2005 onward, since LADBS didn't record CofO dates before then).
-- **Housing types.** ADU (including junior ADUs), single-family (1 unit), duplex–fourplex (2–4), and apartments (5+).
+- **Permitted vs. completed.** Permits are counted by issue date (2001 onward). Completions are counted by Certificate of Occupancy (CofO) date (2005 onward; LADBS didn't record CofO dates before then).
+- **Housing types.** ADUs (including junior ADUs), single-family (1 unit), duplex–fourplex (2–4), and apartments (5+).
 - **New vs. net units.** Net subtracts units removed by demolitions and conversions.
-- **Neighborhood filter.** Uses the LA Times neighborhood boundaries. The chart, totals, map, and pipeline views all follow it, and neighborhood events appear when one is selected.
+- **Neighborhoods.** Every permit is joined to the LA Times neighborhood boundaries. The chart, totals, map, and pipeline views can all be filtered to one neighborhood, which also shows that neighborhood's events, such as transit openings.
+- **Date range.** Presets (this year, last 12 months, last 5 years) or custom dates, shared by every view.
 - **Interest rates.** The federal funds rate or the 30-year mortgage rate, from FRED.
 - **Pipeline.** Where the units permitted each year stand today (completed, in progress, stalled), and the median time from submittal to issue and from issue to CofO.
 
-The full methodology is at the bottom of the page.
+The page's methodology section covers every definition in detail.
 
-## How it works
+## How it's built
 
 ```
-LADBS permits (3 datasets) ─┐
-LADBS Certificates of Occupancy ─┤
-LA County parcels + Census geocoder ─┤   pipeline/build.py   ┌─ data/permits.json
-LA Times neighborhoods ─┼──────────────────────────▶├─ data/neighborhoods.geojson
-FRED interest rates ─┤   (weekly GitHub Action) ├─ data/rates.json
-Google Sheets (manual edits) ─┘                       └─ data/events.json, meta.json
-                                                              │
-                                              index.html + app.js (D3 + MapLibre)
+LADBS permits (3 datasets) ───────┐
+LADBS Certificates of Occupancy ──┤
+LA County parcels, Census geocoder┤   pipeline/build.py    ┌─ data/permits.json
+LA Times neighborhoods ───────────┼────────────────────────▶├─ data/neighborhoods.geojson
+FRED interest rates ──────────────┤  (weekly GitHub Action) ├─ data/rates.json
+Curated corrections and events ───┘                         └─ data/events.json, meta.json
+                                                                       │
+                                                  index.html + app.js (D3 + MapLibre GL)
 ```
 
-Every Monday, [`.github/workflows/update-data.yml`](.github/workflows/update-data.yml) re-downloads every housing permit, rebuilds `data/`, and commits any changes. GitHub Pages then serves the new data. Re-downloading everything takes about 2 minutes. It also picks up new CofO dates on old permits and any fixes LADBS makes.
+A Python pipeline runs weekly on GitHub Actions. It re-downloads every housing-related permit from the City's open data portal and rebuilds the static data files. GitHub Pages serves them to the page, which does all filtering and aggregation in the browser. Re-downloading everything each week, instead of only new rows, also picks up Certificates of Occupancy issued for older permits and any fixes LADBS makes to its records.
 
-To run an update right away (for example, after editing the Google Sheet), go to **Actions → Update data → Run workflow**.
+## Data cleaning
 
-## Manual edits (Google Sheets)
+The raw permit data needs work before it can be summed reliably:
 
-Corrections, missing projects, events, and leaders live in Google Sheet tabs. Publish each tab as CSV (**File → Share → Publish to web → [tab] → CSV**) and paste the URLs into [`config.json`](config.json) under `sheets`. Each run saves a copy of every tab to [`manual/`](manual/), so all edits are kept in git history. Until a URL is set, the pipeline reads the CSV in `manual/` instead.
+- **Types.** The portal stores unit counts as text, so the pipeline converts them to numbers.
+- **Missing CofO dates.** Some completed permits have a blank CofO date in the permit data but a CofO in LADBS's separate Certificate of Occupancy dataset. The earliest CofO for the permit is used.
+- **Double counting.** Supplemental permits that repeat the original permit's unit count are excluded. So are non-building permits (such as parking structures) and Addition or Alter/Repair permits that restate a new building's units at the same address.
+- **Locations.** Permits without coordinates are located by parcel number, then by address using LA County parcel records and the U.S. Census geocoder. Parcels that have since been renumbered are placed at the center of their Assessor block.
+- **Manual corrections.** Known errors, such as square footage entered as a unit count, are corrected by permit number. Projects missing from the LADBS data are added by hand. These live in a curated sheet that the pipeline reads on each run (copies are kept in [`manual/`](manual/)), so corrections survive every refresh.
+- **Review lists.** Each run writes possible duplicates, unlocated permits, and other edge cases to [`review/`](review/) for checking.
 
-| Tab | Columns | Purpose |
-|---|---|---|
-| `corrections` | `permit_nbr, field, value, note` | Fix a field on a permit. Allowed fields: `du_changed`, `adu_changed`, `junior_adu`, `issue_date`, `cofo_date`, `submitted_date`, `status_desc`, `lat`, `lon`, `primary_address`. Use field `exclude` with value `TRUE` to drop a permit. |
-| `additions` | `permit_nbr, address, lat, lon, submitted_date, issue_date, cofo_date, status, du_changed, adu_changed, junior_adu, note` | Projects missing from the LADBS data. `permit_nbr` is optional. |
-| `locations` | `permit_nbr, lat, lon, note` | Coordinates for permits the pipeline couldn't locate (see `review/unmatched_locations.csv`). |
-| `events_city` | `start_date, end_date, event, description, source` | Citywide events. Rows with an `end_date` are drawn as shaded eras. |
-| `events_neighborhood` | `neighborhood, start_date, end_date, event, description, source` | Shown when that neighborhood is selected. `neighborhood` must exactly match an LA Times name. |
-| `leaders` | `office, name, party, start, end` | Mayors, governors, and presidents. Leave `end` blank for whoever is in office. |
+## Repository layout
 
-Dates can be typed as `2012-04-26`, `April 26, 2012`, or `4/26/2012`. Corrections are applied by permit number on every run, so they survive data refreshes. If a corrected permit disappears from the source, it's listed in `review/correction_issues.csv`.
-
-## Review files
-
-Each run writes these to [`review/`](review/) for hand checking:
-
-| File | What to do |
+| Path | Contents |
 |---|---|
-| `unmatched_locations.csv` | Permits with no coordinates after every lookup, largest first. Add coordinates in the `locations` tab. |
-| `possible_duplicates.csv` | Same address and unit count on more than one permit. Exclude real duplicates in `corrections`. |
-| `supplements_to_review.csv` | Supplemental permits of 10+ units that changed the unit count. Most are revisions; some may restate a phase of the same building. |
-| `finaled_without_cofo.csv` | Finaled permits issued since 2005 that have no CofO date, so they aren't counted as completed. |
-| `correction_issues.csv` | Corrections that couldn't be applied. |
+| `index.html`, `app.js`, `style.css` | The dashboard (D3 for charts, MapLibre GL for the map) |
+| `pipeline/build.py` | Data pipeline |
+| `data/` | Generated data the page loads |
+| `manual/` | Snapshots of the curated corrections, additions, events, and leaders |
+| `review/` | Data-quality lists generated each run |
+| `cache/` | Cached location lookups, so each address is only geocoded once |
+| `.github/workflows/update-data.yml` | Weekly data refresh |
 
-## Running locally
+## Run it locally
 
 ```bash
 pip install -r requirements.txt
 python pipeline/build.py
-python -m http.server 8000   # then open http://localhost:8000
+python -m http.server 8000   # open http://localhost:8000
 ```
-
-An optional free [Socrata app token](https://data.lacity.org/profile/edit/developer_settings) avoids rate limits. Set it as the `SOCRATA_APP_TOKEN` environment variable locally, or as a repository secret for the Action.
 
 ## Data sources
 
@@ -77,3 +70,7 @@ An optional free [Socrata app token](https://data.lacity.org/profile/edit/develo
 - [LA County parcels](https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0) and the [U.S. Census geocoder](https://geocoding.geo.census.gov/)
 - FRED: [FEDFUNDS](https://fred.stlouisfed.org/series/FEDFUNDS), [MORTGAGE30US](https://fred.stlouisfed.org/series/MORTGAGE30US)
 - Basemap: [OpenFreeMap](https://openfreemap.org/), © OpenStreetMap contributors
+
+---
+
+Built by [Mohammed Azad](https://shintuzd.com).
