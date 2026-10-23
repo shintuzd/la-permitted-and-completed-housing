@@ -2,7 +2,7 @@
 
 An interactive dashboard of housing permitted and completed in the City of Los Angeles by neighborhood and housing type derived from LADBS permitting data. It shows the data alongside interest rates, City, State, and federal administrations, and the events that shaped housing production.
 
-**Live:** https://shintuzd.github.io/la-permitted-and-completed-housing/
+**Live:** https://shintuzd.com/la-permitted-and-completed-housing/
 
 ## What it shows
 
