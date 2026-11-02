@@ -1,13 +1,13 @@
 {
-  "updated": "2026-10-26",
+  "updated": "2026-11-02",
   "start_issue_date": "2001-01-01",
   "cofo_start_date": "2005-01-01",
   "pipeline_start_issue_date": "2005-01-01",
   "stalled_after_years": 5,
   "status_counts": {
-    "S": 6917,
-    "F": 35320,
-    "C": 74020,
-    "P": 17921
+    "S": 6930,
+    "F": 34655,
+    "C": 74836,
+    "P": 17955
   }
 }
